@@ -1,0 +1,131 @@
+================================================================================
+============= VPP + Kata Containers Lab =======================================
+================================================================================
+
+-------------------------------------------------------------------------------
+1. Details on setting up a host system for Docker, Kata Containers and VPP
+-------------------------------------------------------------------------------
+
+Summary of setup details for host can be found at kata-training/vpp/vpp-host-setup.
+
+For the purposes of this Lab, all of this has already been executed on
+your virtual system. It is here for informational purposes only.  The components
+installed and configured are: VPP from FD.io, Docker, Kata Containers 1.0 and
+the VPP CNM plugin.
+
+
+-------------------------------------------------------------------------------
+2. To start out, let's create a docker network using VPP and the CNM VPP Plugin:
+-------------------------------------------------------------------------------
+
+Take a look @ 00_create_vpp_network.sh.  This will restart VPP as well as the VPP
+plugin, remove the vpp_net network if it already exists, and then start up the docker
+network vpp_net which we'll use to connect two Kata Containers.
+
+After running 00_create_vpp_network.sh, you should expect to see vpp and vpp_main running
+on your system, as well as docker network vpp_net being setup. 
+
+
+-------------------------------------------------------------------------------
+3. Start up two Kata Containers, making use of the vpp_net network:
+-------------------------------------------------------------------------------
+
+Take a look @ 01_create_containers.sh.  This will start two Kata Containers with the
+egernst/network-testing-ubuntu image (the image should already be local on this VM, so no
+need for docker pull).
+
+After starting the container, you can execute:
+
+sudo docker ps
+
+You should see two containers: hasvpp1 and hasvpp2
+
+You can verify you are using a Kata Container by executing ps -aef | grep qemu.
+
+There's a lot of output shown, given the long qemu command line provided, but
+you should see the relevant networking setup passed to QEMU:
+
+ -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/hugepages,share=on,prealloc=on
+ -numa node,memdev=dimm
+ -chardev socket,id=char-df767b1edb40faf6,path=/tmp/vhostuser_192.168.1.2/vhu.sock 
+ -netdev type=vhost-user,id=net-{id},chardev=char-df767b1edb40faf6,vhostforce 
+ -device virtio-net-pci,netdev=net-{id},mac=ca:fe:ca:fe:01:02
+
+Verify that you can see the vhost-user socket that the plugin created at /tmp/v_*,
+where * will match to the IP provided at the docker cmdline to run the container.
+
+-------------------------------------------------------------------------------
+4.  Test connectivity between the Containers
+-------------------------------------------------------------------------------
+
+Attach to hasvpp1:
+sudo docker attach hasvpp1
+
+In the container, check your interface info and ping the other container:
+ip a
+ip route
+ping 192.168.1.3
+
+While ping is running, lets detatch from the container.  Press ctl-p ctl-q to
+detatch while allowing container to container running.  **If you type exit, the container
+will quit, and you'll need to restart a new one (you can rerun ./01_create_containers.sh)
+
+Let's check VPP on the host:
+sudo vppctl show interf
+
+You should see statistics for the interfaces created.  Run it again and verify that
+it is in fact incrementing.
+
+To see the interfaces up/down state, run:
+sudo vppctl show int address
+
+The output from above command should show that the interfaces are up and connected
+to an L2 bridge. Note the bridge id of the bridge.
+
+To display all the bridge domains, run:
+sudo vppctl show bridge-domain
+
+You can see detailed information about the bridge with:
+show bridge-domain {bridge-id} detail
+
+There are a few network tools available on the container image. You can play with tcpdump
+in the Kata Container, for example.
+
+-------------------------------------------------------------------------------
+5.  Take a trace in VPP: 
+-------------------------------------------------------------------------------
+
+Tracing is a great feature in VPP, especially to aid in understanding when packets are
+dropped.  Let's capture a trace:
+
+From the host machine:
+
+sudo vppctl
+
+> show  ?
+
+> show trace ? 
+
+> show run
+
+If you run "run" a couple of times, you should see some of the nodes incrementing (especially
+if you are generating more traffic, like using iperf). Let's add a trace for a single node,
+vhost-user-input:
+
+>trace add vhost-user-input 1
+
+> show run
+
+Now take a look at the trace (assuming you had generated some traffic):
+> show trace
+
+This will show you the chain through which a particular packet travels in VPP.
+
+-------------------------------------------------------------------------------
+5.  Clean up 
+-------------------------------------------------------------------------------
+
+After playing with the containers (testing connectivity, adding more containers,
+removing containers, etc, clean up your setup by running:
+./02_cleanup_containers.sh
+
