@@ -1,0 +1,87 @@
+================================================================================
+============= Kubernetes + Kata Containers Lab =======================================
+================================================================================
+
+-------------------------------------------------------------------------------
+1. Details on setting up a host system for Kata Containers and Kubernetes
+-------------------------------------------------------------------------------
+
+Summary of setup details for host can be found at kata-lab/kubernetes/k8s-setup.
+
+For the purposes of this Lab, all of this has already been executed on
+your virtual system. It is here for informational purposes only.  The components
+installed and configured are: kubelet, kubeadm, Kata Containers 1.0 and
+CRI-O. Kubelet has been configured to use cri-o as its CRI runtime instead of
+the default docker-shim.
+
+-------------------------------------------------------------------------------
+2. To start out, let's create a single node k8s cluster:
+-------------------------------------------------------------------------------
+
+Take a look @ 01_init_k8.sh. Run this script to set up a single node k8s cluster.
+
+This will use kubeadm to bootstrap a Kubernetes cluster. The script will also setup flannel
+as the CNI plugin for the cluster. This may take a few minutes to complete.
+
+-------------------------------------------------------------------------------
+2. Allow nodes to be scheduled on master node
+-------------------------------------------------------------------------------
+
+Since we will be using a single node, we need to allow pods to be scheduled on the
+this node.
+
+Run 02_taint_master.sh
+
+This script will copy the kubeadm config file to your home directory and will remove
+the default NoSchedule taint on the master node so that pods can be scheduled on
+the master node:
+
+-------------------------------------------------------------------------------
+3. Start a trusted k8s sandbox
+-------------------------------------------------------------------------------
+
+cri-o's default trust level has been set as "trusted". You can check this
+by looking for the key "default_workload_trust" in the cri-o configuration file
+/etc/crio/crio.conf.
+
+Take a look at pod-runc.yaml. The pod yaml has no annotations related to trust level.
+Since the default trust level has been set to "trusted", applying this yaml will start 
+a pod using the default "runc" runtime.
+
+Start a k8s pod with:
+
+$ kubectl apply -f pod-runc.yaml
+
+Verify that the pod is running with:
+
+$ kubectl get pods
+
+Execute a shell inside the busybox container in this pod with:
+
+$ kubectl exec -it testpod-runc sh
+
+Run "uname -r" inside the shell to identify the kernel used. This is kernel is the same as the host
+machine indicating "runc" runtime being used.
+Exit from the shell bu typing exit.
+
+-------------------------------------------------------------------------------
+4. Start an untrusted sandbox
+-------------------------------------------------------------------------------
+
+Take a look at pod-kata.yaml. The pod configuration has "untrusted" annotations.
+
+Start a k8s pod with:
+
+$ kubectl apply -f pod-kata.yaml
+
+Verify that the pod is running with:
+
+$ kubectl get pods
+
+Execute a shell inside the busybox container in this pod with:
+
+$ kubectl exec -it testpod-kata sh
+
+Run "uname -r" inside the shell to identify the kernel used.
+The kernel will be different than the one being used on the host system.
+
