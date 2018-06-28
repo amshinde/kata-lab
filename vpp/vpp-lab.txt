@@ -25,12 +25,20 @@ network vpp_net which we'll use to connect two Kata Containers.
 After running 00_create_vpp_network.sh, you should expect to see vpp and vpp_main running
 on your system, as well as docker network vpp_net being setup. 
 
+-------------------------------------------------------------------------------
+3. Update Kata configuration to enable huge table support:
+-------------------------------------------------------------------------------
+
+Run 01_enable_kata_huge_tables.sh. This will enable huge table support
+for Kata Contianers.
+Take a look at /usr/share/defaults/kata-containers/configuration.toml.
+Verify huge table support is set to true by searching for "enable_hugepages = true"
 
 -------------------------------------------------------------------------------
-3. Start up two Kata Containers, making use of the vpp_net network:
+4. Start up two Kata Containers, making use of the vpp_net network:
 -------------------------------------------------------------------------------
 
-Take a look @ 01_create_containers.sh.  This will start two Kata Containers with the
+Take a look @ 02_create_containers.sh.  This will start two Kata Containers with the
 egernst/network-testing-ubuntu image (the image should already be local on this VM, so no
 need for docker pull).
 
@@ -127,5 +135,5 @@ This will show you the chain through which a particular packet travels in VPP.
 
 After playing with the containers (testing connectivity, adding more containers,
 removing containers, etc, clean up your setup by running:
-./02_cleanup_containers.sh
+./03_cleanup_containers.sh
 
