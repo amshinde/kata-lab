@@ -9,10 +9,17 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 # FIXME: Issue: https://github.com/clearcontainers/tests/issues/934
 sudo iptables -P FORWARD ACCEPT
 
+#Turn swap off and mask swap targets
+sudo swapoff -a
+sudo -E systemctl mask swap.target
+
 echo "Start crio service"
 sudo systemctl start crio
 
 sudo rm -rf $HOME/.kube
+
+# Disable huge pages
+sudo sed -i -e 's/\(enable_hugepages\).*=.*$/\1 = false/g' /usr/share/defaults/kata-containers/configuration.toml
 
 sudo -E kubeadm init --pod-network-cidr 10.244.0.0/16 --cri-socket=/var/run/crio/crio.sock
 export KUBECONFIG=/etc/kubernetes/admin.conf
