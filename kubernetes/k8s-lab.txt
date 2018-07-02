@@ -85,3 +85,18 @@ $ kubectl exec -it testpod-kata sh
 Run "uname -r" inside the shell to identify the kernel used.
 The kernel will be different than the one being used on the host system.
 
+-------------------------------------------------------------------------------
+5. Delete pods
+-------------------------------------------------------------------------------
+
+Delete both the pods with :
+
+kubectl delete -f pod-runc.yaml
+kubectl delete -f pod-kata.yaml
+
+-------------------------------------------------------------------------------
+6. Cleanup
+-------------------------------------------------------------------------------
+
+Tear down cluster by running cleanup.sh
+

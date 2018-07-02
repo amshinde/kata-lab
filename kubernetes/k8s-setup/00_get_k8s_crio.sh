@@ -10,6 +10,8 @@ sudo -E apt install -y libglib2.0-dev libseccomp-dev libapparmor-dev \
 .ci/install_crio.sh
 .ci/install_cni_plugins.sh
 
+crio_config_file=/etc/crio/crio.conf
+
 # Set the default trust level as trusted for crio
 sudo sed -i 's/default_workload_trust = .*$/default_workload_trust = "trusted"/' "$crio_config_file"
 
