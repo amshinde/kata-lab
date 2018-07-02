@@ -38,6 +38,8 @@ Verify huge table support is set to true by searching for "enable_hugepages = tr
 4. Start up two Kata Containers, making use of the vpp_net network:
 -------------------------------------------------------------------------------
 
+Run "sudo vppctl show int" to take a look at interfaces on the host.
+
 Take a look @ 02_create_containers.sh.  This will start two Kata Containers with the
 egernst/network-testing-ubuntu image (the image should already be local on this VM, so no
 need for docker pull).

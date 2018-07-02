@@ -1,3 +1,5 @@
+set -e
+
 sudo apt-get install wget
 
 GO_VER=1.10.1
@@ -20,7 +22,7 @@ sudo mkdir -p /etc/docker/plugins
 
 sudo cp $GOPATH/src/github.com/clearcontainers/vpp/vpp.json /etc/docker/plugins
 
-sudo $GOPATH/bin/vpp &
+#sudo $GOPATH/bin/vpp &
 
 sudo systemctl daemon-reload
 sudo systemctl restart docker
