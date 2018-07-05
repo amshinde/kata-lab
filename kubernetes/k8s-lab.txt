@@ -24,7 +24,7 @@ This will use kubeadm to bootstrap a Kubernetes cluster. The script will also se
 as the CNI plugin for the cluster. This may take a few minutes to complete.
 
 -------------------------------------------------------------------------------
-2. Allow nodes to be scheduled on master node
+3. Allow nodes to be scheduled on master node
 -------------------------------------------------------------------------------
 
 Since we will be using a single node, we need to allow pods to be scheduled on the
@@ -34,10 +34,17 @@ Run 02_taint_master.sh
 
 This script will copy the kubeadm config file to your home directory and will remove
 the default NoSchedule taint on the master node so that pods can be scheduled on
-the master node:
+the master node.
 
 -------------------------------------------------------------------------------
-3. Start a trusted k8s sandbox
+3. Wait for k8s CNI to be up
+-------------------------------------------------------------------------------
+
+Run "watch kubectl get pods --all-namespaces".
+Wait till all pods report their status as "Running"
+
+-------------------------------------------------------------------------------
+4. Start a trusted k8s sandbox
 -------------------------------------------------------------------------------
 
 cri-o's default trust level has been set as "trusted". You can check this
@@ -65,7 +72,7 @@ machine indicating "runc" runtime being used.
 Exit from the shell bu typing exit.
 
 -------------------------------------------------------------------------------
-4. Start an untrusted sandbox
+5. Start an untrusted sandbox
 -------------------------------------------------------------------------------
 
 Take a look at pod-kata.yaml. The pod configuration has "untrusted" annotations.
@@ -86,7 +93,7 @@ Run "uname -r" inside the shell to identify the kernel used.
 The kernel will be different than the one being used on the host system.
 
 -------------------------------------------------------------------------------
-5. Delete pods
+6. Delete pods
 -------------------------------------------------------------------------------
 
 Delete both the pods with :
@@ -95,7 +102,7 @@ kubectl delete -f pod-runc.yaml
 kubectl delete -f pod-kata.yaml
 
 -------------------------------------------------------------------------------
-6. Cleanup
+7. Cleanup
 -------------------------------------------------------------------------------
 
 Tear down cluster by running cleanup.sh
