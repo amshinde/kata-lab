@@ -9,6 +9,10 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 # FIXME: Issue: https://github.com/clearcontainers/tests/issues/934
 sudo iptables -P FORWARD ACCEPT
 
+# Remove existing CNI configuration
+sudo rm -rf /etc/cni/net.d/*
+sudo rm -rf /var/lib/cni/networks/
+
 #Turn swap off and mask swap targets
 sudo swapoff -a
 sudo -E systemctl mask swap.target
